@@ -17,6 +17,14 @@ module.exports = {
       id_Carrera: {
         type: Sequelize.INTEGER
       },
+      id_Materia: {
+        type: Sequelize.INTEGER,
+        onDelete: 'CASCADE',
+        reference: {
+          module: 'materia',
+          id: 'id'
+        },
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   materia.associate = function(models) {
     
-
   	//asociacion a carrera (pertenece a:)
   	materia.belongsTo(models.carrera// modelo al que pertenece
     ,{
@@ -15,8 +14,12 @@ module.exports = (sequelize, DataTypes) => {
     })
   	/////////////////////
 
-
-
+  };
+  materia.associate = function(models) {
+    materia.hasMany(models.alumno, {
+      as: "Alumnos_Inscriptos",
+      foreignKey: "id_Materia"
+    });
   };
   return materia;
 };

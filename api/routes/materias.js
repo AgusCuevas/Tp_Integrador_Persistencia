@@ -1,13 +1,29 @@
 var express = require("express");
 var router = express.Router();
 var models = require("../models");
+var autorizacion = require("./autorizacion");
+const jwt = require('jsonwebtoken');
 
-router.get("/", (req, res,next) => {
-  console.log("Esto es un mensaje para ver en consola");
+router.get("/", autorizacion.verificacion, (req, res,next) => {
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+  
+  let page = 0;
+  if(!Number.isNaN(pageAsNumber) && pageAsNumber > 0){
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if(!Number.isNaN(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
+    size = sizeAsNumber;
+  }
   models.materia.findAll({
     attributes: ["id","nombre","id_carrera"],
       /////////se agrega la asociacion 
-      include:[{as:'Carrera-Relacionada', model:models.carrera, attributes: ["id","nombre"]}]
+      include:[{as:'Carrera-Relacionada', model:models.carrera, attributes: ["id","nombre"]}],
+      include:[{as:'Alumnos_Inscriptos', model:models.alumno, attributes: ["nombre", "apellido"]}],
+      limit: size,
+      offset: page * size
       ////////////////////////////////
     })
     .then(materias => res.send(materias))

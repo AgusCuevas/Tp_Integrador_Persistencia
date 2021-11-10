@@ -1,13 +1,29 @@
 var express = require("express");
 var router = express.Router();
 var models = require("../models");
+var autorizacion = require("./autorizacion");
+const jwt = require('jsonwebtoken');
 
-router.get("/", (req, res,next) => {
+router.get("/", autorizacion.verificacion,(req, res,next) => {
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+  
+  let page = 0;
+  if(!Number.isNaN(pageAsNumber) && pageAsNumber > 0){
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if(!Number.isNaN(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
+    size = sizeAsNumber;
+  }
   console.log("Esto es un mensaje para ver en consola");
   models.alumno.findAll({
-    attributes: ["id","nombre", "apellido", "id_carrera"],
+    attributes: ["id","nombre", "apellido", "id_carrera", 'id_Materia'],
       /////////se agrega la asociacion 
-      include:[{as:'Carrera_Cursada', model:models.carrera, attributes: ["id","nombre"]}]
+      include:[{as:'Carrera_Cursada', model:models.carrera, attributes: ["id","nombre"]}],
+      limit: size,
+      offset: page * size
       ////////////////////////////////
     })
     .then(alumnos => res.send(alumnos))
@@ -16,7 +32,7 @@ router.get("/", (req, res,next) => {
 
 router.post("/", (req, res) => {
   models.alumno
-    .create({ nombre: req.body.nombre, apellido: req.body.apellido, id_carrera: req.body.id_carrera })
+    .create({ nombre: req.body.nombre, apellido: req.body.apellido, id_carrera: req.body.id_carrera, id_materia: req.body.id_materia })
     .then(alumno => res.status(201).send({ id: alumno.id }))
     .catch(error => {
       if (error == "SequelizeUniqueConstraintError: Validation error") {

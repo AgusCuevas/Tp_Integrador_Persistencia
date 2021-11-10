@@ -1,14 +1,30 @@
 var express = require("express");
 var router = express.Router();
 var models = require("../models");
+var autorizacion = require("./autorizacion");
+const jwt = require('jsonwebtoken');
 
-router.get("/", (req, res,next) => {
+router.get("/", autorizacion.verificacion, (req, res,next) => {
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+  
+  let page = 0;
+  if(!Number.isNaN(pageAsNumber) && pageAsNumber > 0){
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if(!Number.isNaN(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
+    size = sizeAsNumber;
+  }
   console.log("Esto es un mensaje para ver en consola");
   models.docente.findAll({
     attributes: ["id","nombre", "apellido", "id_Materia"],
       /////////se agrega la asociacion 
-      include:[{as:'Materia_Relacionada', model:models.materia, attributes: ["id","nombre"]}]
-      ////////////////////////////////
+      include:[{as:'Materia_Relacionada', model:models.materia, attributes: ["id","nombre"]}],
+      limit: size,
+      offset: page * size
+      ////////////////////////////////s
     })
     .then(docentes => res.send(docentes))
     .catch(error => { return next(error)});

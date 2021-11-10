@@ -1,12 +1,30 @@
 var express = require("express");
 var router = express.Router();
 var models = require("../models");
+var autorizacion = require("./autorizacion");
+const jwt = require('jsonwebtoken');
 
-router.get("/", (req, res) => {
+router.get("/", autorizacion.verificacion, (req, res) => {
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+  
+  let page = 0;
+  if(!Number.isNaN(pageAsNumber) && pageAsNumber > 0){
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if(!Number.isNaN(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
+    size = sizeAsNumber;
+  }
+
+
   console.log("Esto es un mensaje para ver en consola");
   models.carrera
     .findAll({
-      attributes: ["id", "nombre"]
+      attributes: ["id", "nombre"],
+      limit: size,
+      offset: page * size
     })
     .then(carreras => res.send(carreras))
     .catch(() => res.sendStatus(500));
